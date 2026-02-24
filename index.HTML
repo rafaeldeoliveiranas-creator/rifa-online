@@ -124,37 +124,20 @@ for(let i = 1; i <= 10; i++){
     btn.disabled = true;
   }
 
-  btn.onclick = async () => {
+  btn.onclick = () => {
     if(localStorage.getItem("numeroEscolhido")){
       alert("Você já escolheu um número.");
       return;
     }
 
-    // solicita nome obrigatório
     let nome = "";
     while(!nome){
       nome = prompt("Digite seu nome (obrigatório):");
       if(nome === null) return;
     }
 
-    // solicita telefone obrigatório e verifica repetido
-    let telefone = "";
-    while(!telefone){
-      telefone = prompt("Digite seu telefone (obrigatório, não pode se repetir):");
-      if(telefone === null) return;
-
-      // consulta Firestore para ver se telefone já existe
-      const querySnapshot = await db.collection("numeros").where("telefone", "==", telefone).get();
-      if(!querySnapshot.empty){
-        alert("Este telefone já foi usado. Digite outro.");
-        telefone = ""; // zera e força novo input
-      }
-    }
-
-    // salva no Firestore
     db.collection("numeros").doc(String(i)).update({
-      nome: nome,
-      telefone: telefone
+      nome: nome
     });
 
     localStorage.setItem("numeroEscolhido", i);
