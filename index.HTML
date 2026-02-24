@@ -3,7 +3,7 @@
 <head>  
 <meta charset="UTF-8">  
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  
-<title>Rifa</title>  
+<title>Rifa Online</title>  
 
 <meta name="theme-color" content="#4CAF50">  
 <meta name="mobile-web-app-capable" content="yes">  
@@ -19,62 +19,22 @@ body{
   text-align:center;  
   background:#f4f4f4;  
 }  
-
 header{  
   background:#4CAF50;  
   color:white;  
   padding:18px 10px;  
 }  
-
-header h2{  
-  margin:0;  
-}  
-
-.sub{  
-  font-size:14px;  
-  margin-top:6px;  
-  opacity:0.9;  
-}  
-
-.info{  
-  background:#fff;  
-  margin:15px;  
-  padding:12px;  
-  border-radius:10px;  
-  font-size:14px;  
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);  
-}  
-
-.grid{  
-  display:grid;  
-  grid-template-columns:repeat(3,1fr);  
-  gap:15px;  
-  padding:20px;  
-}  
-
-button{  
-  height:90px;  
-  font-size:22px;  
-  border:none;  
-  border-radius:12px;  
-  background:#4CAF50;  
-  color:white;  
-}  
-
-button:disabled{  
-  background:gray;  
-}  
-
-footer{  
-  font-size:13px;  
-  padding:15px;  
-  color:#555;  
-}  
+header h2{margin:0;}  
+.sub{font-size:14px;margin-top:6px;opacity:0.9;}  
+.info{background:#fff;margin:15px;padding:12px;border-radius:10px;font-size:14px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}  
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;}  
+button{height:90px;font-size:22px;border:none;border-radius:12px;background:#4CAF50;color:white;}  
+button:disabled{background:gray;}  
+footer{font-size:13px;padding:15px;color:#555;}  
 </style>  
 </head>  
 
 <body>  
-
 <header>  
   <h2>🎟️ Rifa Online</h2>  
   <div class="sub">Escolha um número e participe!</div>  
@@ -88,10 +48,7 @@ footer{
 </div>  
 
 <div class="grid" id="grid"></div>  
-
-<footer>  
-  Após escolher um número, ele ficará reservado automaticamente.  
-</footer>  
+<footer>Após escolher um número, ele ficará reservado automaticamente.</footer>  
 
 <script>  
 const firebaseConfig = {  
@@ -107,7 +64,6 @@ const grid = document.getElementById("grid");
 const numeroEscolhido = localStorage.getItem("numeroEscolhido");  
 
 for(let i = 1; i <= 10; i++){  
-
   const btn = document.createElement("button");
   btn.innerText = i;
 
@@ -120,28 +76,45 @@ for(let i = 1; i <= 10; i++){
       }
     });
 
-  if(numeroEscolhido){
-    btn.disabled = true;
-  }
+  if(numeroEscolhido) btn.disabled = true;
 
-  btn.onclick = () => {
+  btn.onclick = async () => {
     if(localStorage.getItem("numeroEscolhido")){
       alert("Você já escolheu um número.");
       return;
     }
 
+    // Nome obrigatório
     let nome = "";
     while(!nome){
       nome = prompt("Digite seu nome (obrigatório):");
       if(nome === null) return;
     }
 
-    db.collection("numeros").doc(String(i)).update({
-      nome: nome
-    });
+    // Telefone obrigatório e válido
+    let telefone = "";
+    while(true){
+      telefone = prompt("Digite seu telefone (somente números, 9 a 11 dígitos, ex: 11987654321):");
+      if(telefone === null) return; // cancelar
+      telefone = telefone.replace(/\D/g,""); // remove tudo que não for número
+
+      if(telefone.length < 9 || telefone.length > 11){
+        alert("O telefone deve ter entre 9 e 11 dígitos.");
+        continue;
+      }
+      break;
+    }
+
+    // Adiciona automaticamente +55
+    telefone = "+55" + telefone;
+
+    await db.collection("numeros").doc(String(i)).set({
+      nome: nome,
+      telefone: telefone
+    }, {merge:true});
 
     localStorage.setItem("numeroEscolhido", i);
-    alert(`Número ${i} reservado com sucesso!`);
+    alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);
     btn.disabled = true;
     btn.innerText = nome;
   };
@@ -149,6 +122,5 @@ for(let i = 1; i <= 10; i++){
   grid.appendChild(btn);
 }
 </script>  
-
 </body>  
 </html>
