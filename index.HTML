@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rifa</title>
+
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  text-align:center;
+  background:#f4f4f4;
+}
+
+header{
+  background:#4CAF50;
+  color:white;
+  padding:18px 10px;
+}
+
+header h2{
+  margin:0;
+}
+
+.sub{
+  font-size:14px;
+  margin-top:6px;
+  opacity:0.9;
+}
+
+.info{
+  background:#fff;
+  margin:15px;
+  padding:12px;
+  border-radius:10px;
+  font-size:14px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  padding:20px;
+}
+
+button{
+  height:90px;
+  font-size:22px;
+  border:none;
+  border-radius:12px;
+  background:#4CAF50;
+  color:white;
+}
+
+button:disabled{
+  background:gray;
+}
+
+footer{
+  font-size:13px;
+  padding:15px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>🎟️ Rifa Online</h2>
+  <div class="sub">Escolha um número e participe!</div>
+</header>
+
+<div class="info">
+  🍀 <b>Boa sorte a todos os participantes!</b><br><br>
+  📅 <b>Sorteio:</b> Domingo, <b>01 de março de 2026</b><br>
+  ⏰ <b>Horário:</b> 20:00
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  Após escolher um número, ele ficará reservado automaticamente.
+</footer>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDuvs3hPSCrOocEqPKEE_RkM7Ehe8QjOXI",
+  authDomain: "rifa-online-c6f75.firebaseapp.com",
+  projectId: "rifa-online-c6f75"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const grid = document.getElementById("grid");
+
+// verifica se este celular já escolheu número
+const numeroEscolhido = localStorage.getItem("numeroEscolhido");
+
+for(let i=1;i<=7;i++){
+
+ const btn=document.createElement("button");
+ btn.innerText=i;
+
+ db.collection("numeros").doc(String(i))
+ .onSnapshot(doc=>{
+   const data=doc.data();
+
+   if(data.nome){
+     btn.innerText=data.nome;
+     btn.disabled=true;
+   }
+ });
+
+ if(numeroEscolhido){
+   btn.disabled=true;
+ }
+
+ btn.onclick=()=>{
+   if(localStorage.getItem("numeroEscolhido")){
+     alert("você já escolheu um número.");
+     return;
+   }
+
+   const nome=prompt("Digite seu nome:");
+
+   if(!nome) return;
+
+   db.collection("numeros").doc(String(i)).update({
+     nome:nome
+   });
+
+   localStorage.setItem("numeroEscolhido", i);
+ };
+
+ grid.appendChild(btn);
+}
+</script>
+
+</body>
+</html>
