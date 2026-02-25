@@ -1,69 +1,102 @@
-<!DOCTYPE html>  
-<html lang="pt-BR">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  
-<title>Rifa Online</title>  
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Rifa Online</title>
 
-<meta name="theme-color" content="#4CAF50">  
-<meta name="mobile-web-app-capable" content="yes">  
-<meta name="apple-mobile-web-app-capable" content="yes">  
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>  
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>  
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<style>  
-body{  
-  margin:0;  
-  font-family:Arial, Helvetica, sans-serif;  
-  text-align:center;  
-  background:#f4f4f4;  
-}  
-header{  
-  background:#4CAF50;  
-  color:white;  
-  padding:18px 10px;  
-}  
-header h2{margin:0;}  
-.sub{font-size:14px;margin-top:6px;opacity:0.9;}  
-.info{background:#fff;margin:15px;padding:12px;border-radius:10px;font-size:14px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}  
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;}  
-button{height:90px;font-size:22px;border:none;border-radius:12px;background:#4CAF50;color:white;}  
-button:disabled{background:gray;}  
-footer{font-size:13px;padding:15px;color:#555;}  
-</style>  
-</head>  
+<style>
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  text-align:center;
+  background:#f4f4f4;
+}
+header{
+  background:#4CAF50;
+  color:white;
+  padding:18px 10px;
+}
+header h2{margin:0;}
+.sub{font-size:14px;margin-top:6px;opacity:0.9;}
+.info{
+  background:#fff;
+  margin:15px;
+  padding:12px;
+  border-radius:10px;
+  font-size:14px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;}
+button{height:90px;font-size:22px;border:none;border-radius:12px;background:#4CAF50;color:white;}
+button:disabled{background:gray;}
+footer{font-size:13px;padding:15px;color:#555;}
+.copy-btn{
+  padding:10px 20px;
+  font-size:16px;
+  border:none;
+  border-radius:8px;
+  background:#4CAF50;
+  color:white;
+  cursor:pointer;
+  margin-top:8px;
+}
+input.copy-input{
+  font-size:18px;
+  text-align:center;
+  border:none;
+  background:none;
+  user-select:text;
+  width:180px;
+}
+</style>
+</head>
 
-<body>  
-<header>  
-  <h2>🎟️ Rifa Online</h2>  
-  <div class="sub">Escolha um número e participe!</div>  
-</header>  
+<body>
+<header>
+  <h2>🎟️ Rifa Online</h2>
+  <div class="sub">Escolha um número e participe!</div>
+</header>
 
-<div class="info">  
-  🍀 <b>Boa sorte a todos os participantes!</b><br><br>  
-  📅 <b>Sorteio:</b> Domingo, <b>01 de março de 2026</b><br>  
-  ⏰ <b>Horário:</b> 20:00<br>  
-  📍 <b>Local:</b> Igreja Batista Frei Solano  
-</div>  
+<div class="info">
+  🍀 <b>Boa sorte a todos os participantes!</b><br><br>
+  📅 <b>Sorteio:</b> Domingo, <b>01 de março de 2026</b><br>
+  ⏰ <b>Horário:</b> 20:00<br>
+  📍 <b>Local:</b> Igreja Batista Frei Solano
+</div>
 
-<div class="grid" id="grid"></div>  
-<footer>Após escolher um número, ele ficará reservado automaticamente.</footer>  
+<div class="grid" id="grid"></div>
 
-<script>  
-const firebaseConfig = {  
-  apiKey: "AIzaSyDuvs3hPSCrOocEqPKEE_RkM7Ehe8QjOXI",  
-  authDomain: "rifa-online-c6f75.firebaseapp.com",  
-  projectId: "rifa-online-c6f75"  
-};  
+<div class="info">
+  💰 <b>Pagamento via PIX:</b><br>
+  <input type="text" class="copy-input" id="pixKey" value="(99) 98843-3063" readonly>
+  <br>
+  <button id="copyPix" class="copy-btn">Copiar chave PIX</button>
+</div>
 
-firebase.initializeApp(firebaseConfig);  
-const db = firebase.firestore();  
+<footer>Após escolher um número, ele ficará reservado automaticamente.</footer>
 
-const grid = document.getElementById("grid");  
-const numeroEscolhido = localStorage.getItem("numeroEscolhido");  
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDuvs3hPSCrOocEqPKEE_RkM7Ehe8QjOXI",
+  authDomain: "rifa-online-c6f75.firebaseapp.com",
+  projectId: "rifa-online-c6f75"
+};
 
-for(let i = 1; i <= 10; i++){  
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const grid = document.getElementById("grid");
+const numeroEscolhido = localStorage.getItem("numeroEscolhido");
+
+for(let i = 1; i <= 10; i++){
   const btn = document.createElement("button");
   btn.innerText = i;
 
@@ -95,8 +128,8 @@ for(let i = 1; i <= 10; i++){
     let telefone = "";
     while(true){
       telefone = prompt("Digite seu telefone (somente números, 9 a 11 dígitos, ex: 11987654321):");
-      if(telefone === null) return; // cancelar
-      telefone = telefone.replace(/\D/g,""); // remove tudo que não for número
+      if(telefone === null) return; 
+      telefone = telefone.replace(/\D/g,""); 
 
       if(telefone.length < 9 || telefone.length > 11){
         alert("O telefone deve ter entre 9 e 11 dígitos.");
@@ -105,7 +138,6 @@ for(let i = 1; i <= 10; i++){
       break;
     }
 
-    // Adiciona automaticamente +55
     telefone = "+55" + telefone;
 
     await db.collection("numeros").doc(String(i)).set({
@@ -121,6 +153,17 @@ for(let i = 1; i <= 10; i++){
 
   grid.appendChild(btn);
 }
-</script>  
-</body>  
+
+// Função para copiar PIX
+const copyBtn = document.getElementById("copyPix");
+const pixInput = document.getElementById("pixKey");
+
+copyBtn.onclick = () => {
+  pixInput.select();
+  pixInput.setSelectionRange(0, 99999); 
+  document.execCommand("copy");
+  alert("Chave PIX copiada para a área de transferência!");
+};
+</script>
+</body>
 </html>
