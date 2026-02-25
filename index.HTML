@@ -35,8 +35,37 @@ header h2{margin:0;}
   box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;}
-button{height:90px;font-size:22px;border:none;border-radius:12px;background:#4CAF50;color:white;}
-button:disabled{background:gray;}
+button{
+  height:90px;
+  font-size:22px;
+  border:none;
+  border-radius:12px;
+  background:#4CAF50;
+  color:white;
+  cursor:pointer;
+  transition: all 0.3s ease;
+}
+button:disabled {
+  cursor: default;
+}
+
+/* Botão reservado totalmente amarelo com efeito pulsante */
+.reservado {
+  position: relative;
+  background: #FFD700; /* fundo amarelo completo */
+  color: black; /* texto visível */
+  border: 3px solid #FFD700;
+  overflow: hidden;
+  animation: pulsarAmarelo 1.5s ease-in-out infinite;
+}
+
+/* Pulsar amarelo */
+@keyframes pulsarAmarelo {
+  0% { box-shadow: 0 0 5px #FFD700; }
+  50% { box-shadow: 0 0 20px #FFD700; }
+  100% { box-shadow: 0 0 5px #FFD700; }
+}
+
 footer{font-size:13px;padding:15px;color:#555;}
 .copy-btn{
   padding:10px 20px;
@@ -75,7 +104,7 @@ input.copy-input{
 <div class="grid" id="grid"></div>
 
 <div class="info">
-  💰 <b>Pagamento via PIX:</b><br>
+  <b>Pagamento via PIX:</b><br>
   <input type="text" class="copy-input" id="pixKey" value="(99) 98843-3063" readonly>
   <br>
   <button id="copyPix" class="copy-btn">Copiar chave PIX</button>
@@ -106,6 +135,7 @@ for(let i = 1; i <= 10; i++){
       if(data && data.nome){
         btn.innerText = data.nome;
         btn.disabled = true;
+        btn.classList.add("reservado"); // fundo amarelo + efeito pulsante
       }
     });
 
@@ -149,6 +179,7 @@ for(let i = 1; i <= 10; i++){
     alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);
     btn.disabled = true;
     btn.innerText = nome;
+    btn.classList.add("reservado"); // amarelo pulsante
   };
 
   grid.appendChild(btn);
