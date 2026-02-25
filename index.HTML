@@ -34,21 +34,30 @@ header h2{margin:0;}
   font-size:14px;
   box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:20px;}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:15px;
+  padding:20px;
+  justify-items:center;
+}
 button{
-  height:90px;
+  width: 80px;
+  height: 80px;
   font-size:22px;
   border:none;
-  border-radius:12px;
+  border-radius:50%; /* Círculo */
   background:#4CAF50;
   color:white;
   cursor:pointer;
   transition: all 0.3s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-button:disabled {
+button:disabled{
   cursor: default;
 }
-
 /* Botão reservado totalmente amarelo com efeito pulsante */
 .reservado {
   position: relative;
@@ -58,14 +67,12 @@ button:disabled {
   overflow: hidden;
   animation: pulsarAmarelo 1.5s ease-in-out infinite;
 }
-
 /* Pulsar amarelo */
 @keyframes pulsarAmarelo {
   0% { box-shadow: 0 0 5px #FFD700; }
   50% { box-shadow: 0 0 20px #FFD700; }
   100% { box-shadow: 0 0 5px #FFD700; }
 }
-
 footer{font-size:13px;padding:15px;color:#555;}
 .copy-btn{
   padding:10px 20px;
@@ -106,7 +113,7 @@ input.copy-input{
 <div class="info">
   <b>Pagamento via PIX:</b><br>
   <input type="text" class="copy-input" id="pixKey" value="(99) 98843-3063" readonly>
-  <br>Vinícius Gabriel dos Santos Silva</b><br>
+  <br><b>Vinícius Gabriel dos Santos Silva</b><br>
   <button id="copyPix" class="copy-btn">Copiar chave PIX</button>
 </div>
 
@@ -125,7 +132,8 @@ const db = firebase.firestore();
 const grid = document.getElementById("grid");
 const numeroEscolhido = localStorage.getItem("numeroEscolhido");
 
-for(let i = 1; i <= 10; i++){
+// Criar 12 botões
+for(let i = 1; i <= 12; i++){
   const btn = document.createElement("button");
   btn.innerText = i;
 
@@ -135,7 +143,7 @@ for(let i = 1; i <= 10; i++){
       if(data && data.nome){
         btn.innerText = data.nome;
         btn.disabled = true;
-        btn.classList.add("reservado"); // fundo amarelo + efeito pulsante
+        btn.classList.add("reservado");
       }
     });
 
@@ -147,14 +155,12 @@ for(let i = 1; i <= 10; i++){
       return;
     }
 
-    // Nome obrigatório
     let nome = "";
     while(!nome){
       nome = prompt("Digite seu nome (obrigatório):");
       if(nome === null) return;
     }
 
-    // Telefone obrigatório e válido
     let telefone = "";
     while(true){
       telefone = prompt("Digite seu telefone (somente números, 9 a 11 dígitos, ex: 11987654321):");
@@ -179,7 +185,7 @@ for(let i = 1; i <= 10; i++){
     alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);
     btn.disabled = true;
     btn.innerText = nome;
-    btn.classList.add("reservado"); // amarelo pulsante
+    btn.classList.add("reservado");
   };
 
   grid.appendChild(btn);
