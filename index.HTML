@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Rifa Online</title>
+<title>RIFA ONLINE</title>
 
 <meta name="theme-color" content="#4CAF50">
 <meta name="mobile-web-app-capable" content="yes">
@@ -46,7 +46,7 @@ button{
   height: 80px;
   font-size:22px;
   border:none;
-  border-radius:50%; /* Círculo */
+  border-radius:50%;
   background:#4CAF50;
   color:white;
   cursor:pointer;
@@ -58,16 +58,14 @@ button{
 button:disabled{
   cursor: default;
 }
-/* Botão reservado totalmente amarelo com efeito pulsante */
 .reservado {
   position: relative;
-  background: #FFD700; /* fundo amarelo completo */
-  color: black; /* texto visível */
+  background: #FFD700;
+  color: black;
   border: 3px solid #FFD700;
   overflow: hidden;
   animation: pulsarAmarelo 1.5s ease-in-out infinite;
 }
-/* Pulsar amarelo */
 @keyframes pulsarAmarelo {
   0% { box-shadow: 0 0 5px #FFD700; }
   50% { box-shadow: 0 0 20px #FFD700; }
@@ -117,6 +115,13 @@ input.copy-input{
   <button id="copyPix" class="copy-btn">Copiar chave PIX</button>
 </div>
 
+<!-- BOTÃO ADMIN -->
+<div class="info">
+  <button id="adminBtn" class="copy-btn" style="background:#222;">
+    🔐 Gabriel ADM
+  </button>
+</div>
+
 <footer>Após escolher um número, ele ficará reservado automaticamente.</footer>
 
 <script>
@@ -132,10 +137,15 @@ const db = firebase.firestore();
 const grid = document.getElementById("grid");
 const numeroEscolhido = localStorage.getItem("numeroEscolhido");
 
+let modoAdmin = false;
+const botoes = [];
+
 // Criar 12 botões
 for(let i = 1; i <= 12; i++){
   const btn = document.createElement("button");
   btn.innerText = i;
+
+  botoes.push(btn);
 
   db.collection("numeros").doc(String(i))
     .onSnapshot(doc => {
@@ -150,7 +160,8 @@ for(let i = 1; i <= 12; i++){
   if(numeroEscolhido) btn.disabled = true;
 
   btn.onclick = async () => {
-    if(localStorage.getItem("numeroEscolhido")){
+
+    if(!modoAdmin && localStorage.getItem("numeroEscolhido")){
       alert("Você já escolheu um número.");
       return;
     }
@@ -181,17 +192,17 @@ for(let i = 1; i <= 12; i++){
       telefone: telefone
     }, {merge:true});
 
-    localStorage.setItem("numeroEscolhido", i);
+    if(!modoAdmin){
+      localStorage.setItem("numeroEscolhido", i);
+    }
+
     alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);
-    btn.disabled = true;
-    btn.innerText = nome;
-    btn.classList.add("reservado");
   };
 
   grid.appendChild(btn);
 }
 
-// Função para copiar PIX
+// Copiar PIX (inalterado)
 const copyBtn = document.getElementById("copyPix");
 const pixInput = document.getElementById("pixKey");
 
@@ -200,6 +211,25 @@ copyBtn.onclick = () => {
   pixInput.setSelectionRange(0, 99999); 
   document.execCommand("copy");
   alert("Chave PIX copiada para a área de transferência!");
+};
+
+// ADMIN VERDADEIRO
+document.getElementById("adminBtn").onclick = () => {
+  const senha = prompt("Digite a senha de administrador:");
+
+  if(senha === "2007"){
+    modoAdmin = true;
+
+    botoes.forEach(btn => {
+      if(!btn.classList.contains("reservado")){
+        btn.disabled = false;
+      }
+    });
+
+    alert("Modo administrador ativado.");
+  }else{
+    alert("Senha incorreta.");
+  }
 };
 </script>
 </body>
