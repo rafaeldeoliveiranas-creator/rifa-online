@@ -11,6 +11,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 
 <style>
 body{
@@ -140,11 +141,13 @@ const numeroEscolhido = localStorage.getItem("numeroEscolhido");
 let modoAdmin = false;
 const botoes = [];
 
+// Inicializa EmailJS
+emailjs.init("LVE24gmvryWrGAltP"); // Public Key
+
 // Criar 12 botões
 for(let i = 1; i <= 12; i++){
   const btn = document.createElement("button");
   btn.innerText = i;
-
   botoes.push(btn);
 
   db.collection("numeros").doc(String(i))
@@ -160,7 +163,6 @@ for(let i = 1; i <= 12; i++){
   if(numeroEscolhido) btn.disabled = true;
 
   btn.onclick = async () => {
-
     if(!modoAdmin && localStorage.getItem("numeroEscolhido")){
       alert("Você já escolheu um número.");
       return;
@@ -177,14 +179,12 @@ for(let i = 1; i <= 12; i++){
       telefone = prompt("Digite seu telefone (somente números, 9 a 11 dígitos, ex: 11987654321):");
       if(telefone === null) return; 
       telefone = telefone.replace(/\D/g,""); 
-
       if(telefone.length < 9 || telefone.length > 11){
         alert("O telefone deve ter entre 9 e 11 dígitos.");
         continue;
       }
       break;
     }
-
     telefone = "+55" + telefone;
 
     await db.collection("numeros").doc(String(i)).set({
@@ -197,15 +197,26 @@ for(let i = 1; i <= 12; i++){
     }
 
     alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);
+
+    // Enviar e-mail de notificação via EmailJS
+    emailjs.send("service_mgkcv6i", "template_ocfezu7", {
+        nome: nome,
+        telefone: telefone,
+        numero: i
+    })
+    .then(function(response) {
+        console.log("Notificação enviada!", response.status, response.text);
+    }, function(error) {
+        console.log("Erro ao enviar notificação...", error);
+    });
   };
 
   grid.appendChild(btn);
 }
 
-// Copiar PIX (inalterado)
+// Copiar PIX
 const copyBtn = document.getElementById("copyPix");
 const pixInput = document.getElementById("pixKey");
-
 copyBtn.onclick = () => {
   pixInput.select();
   pixInput.setSelectionRange(0, 99999); 
@@ -216,16 +227,13 @@ copyBtn.onclick = () => {
 // ADMIN VERDADEIRO
 document.getElementById("adminBtn").onclick = () => {
   const senha = prompt("Digite a senha de administrador:");
-
   if(senha === "2007"){
     modoAdmin = true;
-
     botoes.forEach(btn => {
       if(!btn.classList.contains("reservado")){
         btn.disabled = false;
       }
     });
-
     alert("Modo administrador ativado.");
   }else{
     alert("Senha incorreta.");
