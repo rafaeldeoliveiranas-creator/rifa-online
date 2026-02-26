@@ -1,244 +1,211 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>RIFA ONLINE</title>
-
-<meta name="theme-color" content="#4CAF50">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-
-<style>
-body{
-  margin:0;
-  font-family:Arial, Helvetica, sans-serif;
-  text-align:center;
-  background:#f4f4f4;
-}
-header{
-  background:#4CAF50;
-  color:white;
-  padding:18px 10px;
-}
-header h2{margin:0;}
-.sub{font-size:14px;margin-top:6px;opacity:0.9;}
-.info{
-  background:#fff;
-  margin:15px;
-  padding:12px;
-  border-radius:10px;
-  font-size:14px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:15px;
-  padding:20px;
-  justify-items:center;
-}
-button{
-  width: 80px;
-  height: 80px;
-  font-size:22px;
-  border:none;
-  border-radius:50%;
-  background:#4CAF50;
-  color:white;
-  cursor:pointer;
-  transition: all 0.3s ease;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-button:disabled{
-  cursor: default;
-}
-.reservado {
-  position: relative;
-  background: #FFD700;
-  color: black;
-  border: 3px solid #FFD700;
-  overflow: hidden;
-  animation: pulsarAmarelo 1.5s ease-in-out infinite;
-}
-@keyframes pulsarAmarelo {
-  0% { box-shadow: 0 0 5px #FFD700; }
-  50% { box-shadow: 0 0 20px #FFD700; }
-  100% { box-shadow: 0 0 5px #FFD700; }
-}
-footer{font-size:13px;padding:15px;color:#555;}
-.copy-btn{
-  padding:10px 20px;
-  font-size:16px;
-  border:none;
-  border-radius:8px;
-  background:#4CAF50;
-  color:white;
-  cursor:pointer;
-  margin-top:8px;
-}
-input.copy-input{
-  font-size:18px;
-  text-align:center;
-  border:none;
-  background:none;
-  user-select:text;
-  width:180px;
-}
-</style>
-</head>
-
-<body>
-<header>
-  <h2>🎟️ Rifa Online</h2>
-  <div class="sub">Escolha um número e participe!</div>
-</header>
-
-<div class="info">
-  🍀 <b>Boa sorte a todos os participantes!</b><br><br>
-  📅 <b>Sorteio:</b> Domingo, <b>01 de março de 2026</b><br>
-  ⏰ <b>Horário:</b> 20:00<br>
-  📍 <b>Local:</b> Igreja Batista Frei Solano
-</div>
-
-<div class="grid" id="grid"></div>
-
-<div class="info">
-  <b>Pagamento via PIX:</b><br>
-  <input type="text" class="copy-input" id="pixKey" value="(99) 98843-3063" readonly>
-  <br><b>Vinícius Gabriel dos Santos Silva</b><br>
-  <button id="copyPix" class="copy-btn">Copiar chave PIX</button>
-</div>
-
-<!-- BOTÃO ADMIN -->
-<div class="info">
-  <button id="adminBtn" class="copy-btn" style="background:#222;">
-    🔐 Gabriel ADM
-  </button>
-</div>
-
-<footer>Após escolher um número, ele ficará reservado automaticamente.</footer>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDuvs3hPSCrOocEqPKEE_RkM7Ehe8QjOXI",
-  authDomain: "rifa-online-c6f75.firebaseapp.com",
-  projectId: "rifa-online-c6f75"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-const grid = document.getElementById("grid");
-const numeroEscolhido = localStorage.getItem("numeroEscolhido");
-
-let modoAdmin = false;
-const botoes = [];
-
-// Inicializa EmailJS
-emailjs.init("LVE24gmvryWrGAltP"); // Public Key
-
-// Criar 12 botões
-for(let i = 1; i <= 12; i++){
-  const btn = document.createElement("button");
-  btn.innerText = i;
-  botoes.push(btn);
-
-  db.collection("numeros").doc(String(i))
-    .onSnapshot(doc => {
-      const data = doc.data();
-      if(data && data.nome){
-        btn.innerText = data.nome;
-        btn.disabled = true;
-        btn.classList.add("reservado");
-      }
-    });
-
-  if(numeroEscolhido) btn.disabled = true;
-
-  btn.onclick = async () => {
-    if(!modoAdmin && localStorage.getItem("numeroEscolhido")){
-      alert("Você já escolheu um número.");
-      return;
-    }
-
-    let nome = "";
-    while(!nome){
-      nome = prompt("Digite seu nome (obrigatório):");
-      if(nome === null) return;
-    }
-
-    let telefone = "";
-    while(true){
-      telefone = prompt("Digite seu telefone (somente números, 9 a 11 dígitos, ex: 11987654321):");
-      if(telefone === null) return; 
-      telefone = telefone.replace(/\D/g,""); 
-      if(telefone.length < 9 || telefone.length > 11){
-        alert("O telefone deve ter entre 9 e 11 dígitos.");
-        continue;
-      }
-      break;
-    }
-    telefone = "+55" + telefone;
-
-    await db.collection("numeros").doc(String(i)).set({
-      nome: nome,
-      telefone: telefone
-    }, {merge:true});
-
-    if(!modoAdmin){
-      localStorage.setItem("numeroEscolhido", i);
-    }
-
-    alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);
-
-    // Enviar e-mail de notificação via EmailJS
-    emailjs.send("service_mgkcv6i", "template_ocfezu7", {
-        nome: nome,
-        telefone: telefone,
-        numero: i
-    })
-    .then(function(response) {
-        console.log("Notificação enviada!", response.status, response.text);
-    }, function(error) {
-        console.log("Erro ao enviar notificação...", error);
-    });
-  };
-
-  grid.appendChild(btn);
-}
-
-// Copiar PIX
-const copyBtn = document.getElementById("copyPix");
-const pixInput = document.getElementById("pixKey");
-copyBtn.onclick = () => {
-  pixInput.select();
-  pixInput.setSelectionRange(0, 99999); 
-  document.execCommand("copy");
-  alert("Chave PIX copiada para a área de transferência!");
-};
-
-// ADMIN VERDADEIRO
-document.getElementById("adminBtn").onclick = () => {
-  const senha = prompt("Digite a senha de administrador:");
-  if(senha === "2007"){
-    modoAdmin = true;
-    botoes.forEach(btn => {
-      if(!btn.classList.contains("reservado")){
-        btn.disabled = false;
-      }
-    });
-    alert("Modo administrador ativado.");
-  }else{
-    alert("Senha incorreta.");
-  }
-};
-</script>
-</body>
+<!DOCTYPE html>  <html lang="pt-BR">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">  
+<title>RIFA ONLINE</title>  <meta name="theme-color" content="#4CAF50">  
+<meta name="mobile-web-app-capable" content="yes">  
+<meta name="apple-mobile-web-app-capable" content="yes">  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>  <style>  
+body{  
+  margin:0;  
+  font-family:Arial, Helvetica, sans-serif;  
+  text-align:center;  
+  background:#f4f4f4;  
+}  
+header{  
+  background:#4CAF50;  
+  color:white;  
+  padding:18px 10px;  
+}  
+header h2{margin:0;}  
+.sub{font-size:14px;margin-top:6px;opacity:0.9;}  
+.info{  
+  background:#fff;  
+  margin:15px;  
+  padding:12px;  
+  border-radius:10px;  
+  font-size:14px;  
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);  
+}  
+.grid{  
+  display:grid;  
+  grid-template-columns:repeat(3, 1fr);  
+  gap:15px;  
+  padding:20px;  
+  justify-items:center;  
+}  
+button{  
+  width: 80px;  
+  height: 80px;  
+  font-size:22px;  
+  border:none;  
+  border-radius:50%;  
+  background:#4CAF50;  
+  color:white;  
+  cursor:pointer;  
+  transition: all 0.3s ease;  
+  display:flex;  
+  align-items:center;  
+  justify-content:center;  
+}  
+button:disabled{  
+  cursor: default;  
+}  
+.reservado {  
+  position: relative;  
+  background: #FFD700;  
+  color: black;  
+  border: 3px solid #FFD700;  
+  overflow: hidden;  
+  animation: pulsarAmarelo 1.5s ease-in-out infinite;  
+}  
+@keyframes pulsarAmarelo {  
+  0% { box-shadow: 0 0 5px #FFD700; }  
+  50% { box-shadow: 0 0 20px #FFD700; }  
+  100% { box-shadow: 0 0 5px #FFD700; }  
+}  
+footer{font-size:13px;padding:15px;color:#555;}  
+.copy-btn{  
+  padding:10px 20px;  
+  font-size:16px;  
+  border:none;  
+  border-radius:8px;  
+  background:#4CAF50;  
+  color:white;  
+  cursor:pointer;  
+  margin-top:8px;  
+}  
+input.copy-input{  
+  font-size:18px;  
+  text-align:center;  
+  border:none;  
+  background:none;  
+  user-select:text;  
+  width:180px;  
+}  
+</style>  </head>  <body>  
+<header>  
+  <h2>🎟️ Rifa Online</h2>  
+  <div class="sub">Escolha um número e participe!</div>  
+</header>  <div class="info">  
+  🍀 <b>Boa sorte a todos os participantes!</b><br><br>  
+  📅 <b>Sorteio:</b> Domingo, <b>01 de março de 2026</b><br>  
+  ⏰ <b>Horário:</b> 20:00<br>  
+  📍 <b>Local:</b> Igreja Batista Frei Solano  
+</div>  <div class="grid" id="grid"></div>  <div class="info">  
+  <b>Pagamento via PIX:</b><br>  
+  <input type="text" class="copy-input" id="pixKey" value="(99) 98843-3063" readonly>  
+  <br><b>Vinícius Gabriel dos Santos Silva</b><br>  
+  <button id="copyPix" class="copy-btn">Copiar chave PIX</button>  
+</div>  <!-- BOTÃO ADMIN -->  <div class="info">  
+  <button id="adminBtn" class="copy-btn" style="background:#222;">  
+    🔐 Gabriel ADM  
+  </button>  
+</div>  <footer>Após escolher um número, ele ficará reservado automaticamente.</footer>  <script>  
+const firebaseConfig = {  
+  apiKey: "AIzaSyDuvs3hPSCrOocEqPKEE_RkM7Ehe8QjOXI",  
+  authDomain: "rifa-online-c6f75.firebaseapp.com",  
+  projectId: "rifa-online-c6f75"  
+};  
+  
+firebase.initializeApp(firebaseConfig);  
+const db = firebase.firestore();  
+  
+const grid = document.getElementById("grid");  
+const numeroEscolhido = localStorage.getItem("numeroEscolhido");  
+  
+let modoAdmin = false;  
+const botoes = [];  
+  
+// Criar 12 botões  
+for(let i = 1; i <= 12; i++){  
+  const btn = document.createElement("button");  
+  btn.innerText = i;  
+  
+  botoes.push(btn);  
+  
+  db.collection("numeros").doc(String(i))  
+    .onSnapshot(doc => {  
+      const data = doc.data();  
+      if(data && data.nome){  
+        btn.innerText = data.nome;  
+        btn.disabled = true;  
+        btn.classList.add("reservado");  
+      }  
+    });  
+  
+  if(numeroEscolhido) btn.disabled = true;  
+  
+  btn.onclick = async () => {  
+  
+    if(!modoAdmin && localStorage.getItem("numeroEscolhido")){  
+      alert("Você já escolheu um número.");  
+      return;  
+    }  
+  
+    let nome = "";  
+    while(!nome){  
+      nome = prompt("Digite seu nome (obrigatório):");  
+      if(nome === null) return;  
+    }  
+  
+    let telefone = "";  
+    while(true){  
+      telefone = prompt("Digite seu telefone (somente números, 9 a 11 dígitos, ex: 11987654321):");  
+      if(telefone === null) return;   
+      telefone = telefone.replace(/\D/g,"");   
+  
+      if(telefone.length < 9 || telefone.length > 11){  
+        alert("O telefone deve ter entre 9 e 11 dígitos.");  
+        continue;  
+      }  
+      break;  
+    }  
+  
+    telefone = "+55" + telefone;  
+  
+    await db.collection("numeros").doc(String(i)).set({  
+      nome: nome,  
+      telefone: telefone  
+    }, {merge:true});  
+  
+    if(!modoAdmin){  
+      localStorage.setItem("numeroEscolhido", i);  
+    }  
+  
+    alert(`Número ${i} reservado com sucesso!\nTelefone registrado: ${telefone}`);  
+  };  
+  
+  grid.appendChild(btn);  
+}  
+  
+// Copiar PIX (inalterado)  
+const copyBtn = document.getElementById("copyPix");  
+const pixInput = document.getElementById("pixKey");  
+  
+copyBtn.onclick = () => {  
+  pixInput.select();  
+  pixInput.setSelectionRange(0, 99999);   
+  document.execCommand("copy");  
+  alert("Chave PIX copiada para a área de transferência!");  
+};  
+  
+// ADMIN VERDADEIRO  
+document.getElementById("adminBtn").onclick = () => {  
+  const senha = prompt("Digite a senha de administrador:");  
+  
+  if(senha === "2007"){  
+    modoAdmin = true;  
+  
+    botoes.forEach(btn => {  
+      if(!btn.classList.contains("reservado")){  
+        btn.disabled = false;  
+      }  
+    });  
+  
+    alert("Modo administrador ativado.");  
+  }else{  
+    alert("Senha incorreta.");  
+  }  
+};  
+</script>  </body>  
 </html>
